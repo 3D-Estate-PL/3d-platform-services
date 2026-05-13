@@ -1,5 +1,83 @@
 # Image Management – opis działania
 
+## Przykłady kodu
+
+### 1. Publikacja żądania resize (API)
+
+Wywołanie endpointu HTTP POST:
+
+```csharp
+[HttpPost("resize/async", Name = nameof(ResizeImageRequest))]
+public async Task<IActionResult> ResizeImageRequest([FromBody] ResizeImageRequested command)
+{   
+   await _bus.PublishAsync(command);
+   return Accepted();
+}
+```
+Plik: [ImagesController.cs](../src/Services/ImagesManagement/ImagesManagement.Api/Controllers/ImagesController.cs)
+
+Przykładowy payload:
+```json
+{
+  "storageKey": "images",
+  "imageName": "photo.jpg",
+  "width": 200,
+  "height": 200,
+  "compression": 90
+}
+```
+
+Definicja eventu:
+```csharp
+[TopicName("resize-image-requested")]
+public record ResizeImageRequested : IntegrationEvent
+{
+   public string StorageKey { get; set; }
+   public string ImageName{ get; set; }
+   public int? Width { get; set; }
+   public int? Height { get; set; }
+   public int? MaxRes { get; set; }
+   public int? Compression { get; set; }
+   public string? DestinationFileName { get; set; }
+}
+```
+Plik: [ResizeImageCommand.cs](../src/Services/ImagesManagement/ImagesManagement.Application/IntegrationEvents/ResizeImageCommand.cs)
+
+### 2. Konsumpcja żądania (handler)
+
+```csharp
+public class ResizeImageCommandHandler : IntegrationEventHandler<ResizeImageRequested>
+{
+   protected override async Task HandleEvent(ResizeImageRequested request, CancellationToken cancellationToken)
+   {
+      var command = new ResizeImageCommand(request.StorageKey, request.ImageName, request.Width,
+         request.Height, request.MaxRes, fileEncoder, request.Compression ?? 90, destinationFileName, false);
+      await _mediator.Send(command, cancellationToken);
+   }
+}
+```
+Plik: [ResizeImageCommandHandler.cs](../src/Services/ImagesManagement/ImagesManagement.Application/IntegrationEvents/ResizeImageCommandHandler.cs)
+
+### 3. Przetwarzanie polecenia resize
+
+```csharp
+public class ResizeImageCommand : ICommand<ResizeImageCommandResponse>
+{
+   // ...właściwości i konstruktor...
+}
+
+internal class GetImageQueryQueryHandler : ICommandHandler<ResizeImageCommand, ResizeImageCommandResponse>
+{
+   public async Task<ResizeImageCommandResponse> Handle(ResizeImageCommand request, CancellationToken cancellationToken)
+   {
+      // Pobranie pliku, resize, zapis, zwrot URL
+   }
+}
+```
+Plik: [ResizeImageCommand.cs](../src/Services/ImagesManagement/ImagesManagement.Application/Images/ResizeImageCommand.cs)
+
+---
+
 ## Przegląd
 
 Moduł Image Management odpowiada za zarządzanie zdjęciami w platformie 3D Estate. Kluczową funkcjonalnością jest dynamiczne skalowanie (resize) zdjęć na żądanie, realizowane w architekturze asynchronicznej z użyciem kolejek (pub/sub).
