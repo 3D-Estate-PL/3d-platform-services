@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>BuildingBlocks.Application.EventBus</AssemblyName>
+        <RootNamespace>BuildingBlocks.Application.EventBus</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+
+
+      <PackageReference Include="MediatR" Version="11.1.0" />
+      <PackageReference Include="MediatR.Contracts" Version="1.0.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+      <PackageReference Include="OpenTelemetry.Api" Version="1.4.0" />
+    </ItemGroup>
+
+</Project>

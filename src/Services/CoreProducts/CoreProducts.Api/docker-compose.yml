@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./output:/etc/output:rw # Store the logs        depends_on:
+    
+  core-products-api:
+    image: ${REGISTRY:-platform3d}/core-products-library.api:${TAG:-latest}
+    build:
+      context: ../../../../
+      dockerfile: src/Services/CoreProducts/CoreProducts.API/Dockerfile
+    depends_on:
+      - otel-collector
+  
+  core-products-api-dapr:
+    image: "daprio/daprd:latest"
+    volumes:
+      - "/var/.dapr:/dapr"
+    depends_on:
+      - core-products-api
+    network_mode: "service:core-products-api"      
+
+
+    

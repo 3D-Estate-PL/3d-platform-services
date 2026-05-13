@@ -1,0 +1,78 @@
+parameters:
+  - name: ServiceName
+    type: string
+
+jobs:
+  - job: BuildAndPush
+    displayName: Build Image
+    variables:
+      DOCKER_HOST: unix:///var/run/docker.sock
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 0
+      
+      # 1️⃣ Install GitVersion as .NET global tool
+      - task: DotNetCoreCLI@2
+        displayName: 'Install GitVersion'
+        inputs:
+          command: 'custom'
+          custom: 'tool'
+          arguments: 'install -g GitVersion.Tool --version 5.12.0'
+      
+      # 2️⃣ Run GitVersion and expose variables
+      - script: |
+          dotnet gitversion /output buildserver
+        displayName: 'Run GitVersion'
+      
+      # 3️⃣ Set and display new build number
+      - script: |
+          echo "##vso[task.setvariable variable=NEWBUILDNUMBER;]${{parameters.ServiceName}}-$(GitVersion.SemVer)"
+          echo "New build number: $(NEWBUILDNUMBER)"
+        displayName: 'Set and display new build number'
+      
+      # 4️⃣ Update build number in Azure DevOps
+      - script: |
+          echo "##vso[build.updatebuildnumber]$(NEWBUILDNUMBER)"
+        displayName: 'Update Build Number'
+      
+      # 5️⃣ Build Docker image
+      - task: DockerCompose@0
+        displayName: 'Docker Compose Build'
+        inputs:
+          containerregistrytype: 'Azure Container Registry'
+          azureSubscription: 'platform-services-prod-asc'
+          azureContainerRegistry: '{"loginServer":"acr3destate.azurecr.io", "id" : "/subscriptions/c37055ae-dbd0-4e74-ad2d-a2cd034d9719/resourceGroups/rg-3dplatform-share-euw/providers/Microsoft.ContainerRegistry/registries/ACR3destate"}'
+          dockerComposeFile: 'docker-compose.yml'
+          qualifyImageNames: false
+          action: 'Run a Docker Compose command'
+          dockerComposeCommand: 'build'
+          arguments: '${{parameters.ServiceName}}'
+          dockerComposeFileArgs: |
+            REGISTRY=acr3destate.azurecr.io
+            TAG=$(GitVersion.SemVer)
+      
+      # 6️⃣ Push image to ACR
+      - task: DockerCompose@0
+        displayName: 'Push Image To ACR'
+        inputs:
+          containerregistrytype: 'Azure Container Registry'
+          azureSubscription: 'platform-services-prod-asc'
+          azureContainerRegistry: '{"loginServer":"acr3destate.azurecr.io", "id" : "/subscriptions/c37055ae-dbd0-4e74-ad2d-a2cd034d9719/resourceGroups/rg-3dplatform-share-euw/providers/Microsoft.ContainerRegistry/registries/ACR3destate"}'
+          dockerComposeFile: 'docker-compose.yml'
+          qualifyImageNames: false
+          action: 'Run a Docker Compose command'
+          dockerComposeCommand: 'push'
+          arguments: '${{parameters.ServiceName}}'
+          includeLatestTag: true
+          dockerComposeFileArgs: |
+            REGISTRY=acr3destate.azurecr.io
+            TAG=$(GitVersion.SemVer)
+      
+      # 7️⃣ Collect and expose image tag
+      - script: |
+          echo "ver: $(GitVersion.SemVer)"
+          echo "##vso[task.setvariable variable=ImageTag;isOutput=true]$(GitVersion.SemVer)"
+        name: Build
+        displayName: "Collect Image Tag"
+

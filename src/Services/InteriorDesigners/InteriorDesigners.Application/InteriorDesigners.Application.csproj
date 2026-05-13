@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>InteriorDesigners.Application</RootNamespace>
+        <AssemblyName>InteriorDesigners.Application</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Abstractions.CQRS\BuildingBlocks.Abstractions.CQRS.csproj" />
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Abstractions.Excel\BuildingBlocks.Abstractions.Excel.csproj" />
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Abstractions.Exceptions\BuildingBlocks.Abstractions.Exceptions.csproj" />
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Application.EventBus\BuildingBlocks.Application.EventBus.csproj" />
+      <ProjectReference Include="..\..\InteriorDesigners.Domain\InteriorDesigners.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+        <PackageReference Include="NameGenerator" Version="2.0.4" />
+    </ItemGroup>
+
+</Project>

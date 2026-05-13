@@ -1,0 +1,74 @@
+version: '3.4'
+
+# The default docker-compose.override file can use the "localhost" as the external name for testing web apps within the same dev machine.
+# The PLATFORM3D_EXTERNAL_DNS_NAME_OR_IP environment variable is taken, by default, from the ".env" file defined like:
+#     PLATFORM3D_EXTERNAL_DNS_NAME_OR_IP=localhost
+# but values present in the environment vars at runtime will always override those defined inside the .env file
+  
+services:
+
+  zipkin:
+    ports:
+      - "5411:9411"
+      
+  # OpenTelemetry Collector
+  otel-collector:
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "13133:13133" # health_check extension
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP http 
+  
+  
+  platform-api-gw:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=dev
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - OtlGrpcEndpoint=http://otel-collector:4317
+      - Environment:dev
+      - ServiceNamespace:3dEstate
+      - ServiceVersion:1.0
+      - AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET
+      - AZURE_TENANT_ID       
+    ports:
+      - "5101:80"
+      - "50004:50001"
+  
+  platform-api-gw-dapr:
+    command: [ "./daprd",
+               "-app-id", "platform-api-gw",
+               "-app-port", "80",
+               "-components-path", "/components",
+               "-config", "/configuration/platform-config.yaml"
+    ]
+    volumes:
+      - "../../../../dapr/components/:/components"
+      - "../../../../dapr/configuration/:/configuration"    
+  
+  tours-styles-configurator-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=dev-docker
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - OtlGrpcEndpoint=http://otel-collector:4317
+      - Environment:dev
+      - ServiceNamespace:3dEstate
+      - ServiceVersion:1.0
+      - AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET
+      - AZURE_TENANT_ID
+    ports:
+      - "5105:80"
+      - "50005:50001"
+  
+  
+  tours-styles-configurator-api-dapr:
+    command: ["./daprd",
+              "-app-id", "tours-styles-configurator-api",
+              "-app-port", "80",
+              "-components-path", "/components",
+              "-config", "/configuration/platform-config.yaml"
+    ]
+    volumes:
+      - "../../../../dapr/components/:/components"
+      - "../../../../dapr/configuration/:/configuration"

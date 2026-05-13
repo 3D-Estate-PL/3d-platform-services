@@ -1,0 +1,12 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: config
+  namespace: platform3d
+spec:
+  tracing:
+    samplingRate: "1"
+    zipkin:
+      endpointAddress: "https://trace-api.eu.newrelic.com/trace/v1?Api-Key=eu01xx4f460a09e5f3acb0f85b251f29FFFFNRAL&Data-Format=zipkin&Data-Format-Version=2"
+  metrics:
+    enabled: false      

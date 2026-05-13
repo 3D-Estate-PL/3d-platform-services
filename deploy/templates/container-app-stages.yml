@@ -1,0 +1,107 @@
+parameters:
+- name: serviceName
+  type: string
+
+stages:
+
+    - stage: Build
+      displayName: Build and push image
+      jobs:
+        - template: build-and-push-docker.yml
+          parameters:
+            ServiceName: $(serviceName)
+
+    - stage: Staging
+      dependsOn: Build
+      condition: and(succeeded(), eq(variables.isMain, 'false'))
+      displayName: Release To Staging
+      variables:
+        - group: 3dplatform-stg-vg
+      jobs:       
+      - deployment:
+        variables:
+          imageTag: $[stageDependencies.Build.BuildAndPush.outputs['Build.ImageTag']]
+          bicepFileName: '${{ parameters.serviceName }}.bicep'
+        displayName: Staging deploy
+        environment: Staging
+        strategy:
+            runOnce:
+              deploy:
+                steps:
+                - script: echo group $(resourceGroupName) image $(azureContainerRegistry)/$(serviceName):$(imageTag)
+                  name: echovar
+
+                - checkout: self
+                  clean: true
+                - script: az bicep build --file deploy/containerapps/modules/apps/$(bicepFileName)
+                  displayName: 'Compile Bicep File'
+                - task: AzureResourceManagerTemplateDeployment@3
+                  inputs: 
+                    azureResourceManagerConnection: '$(azureServiceConnection)'
+                    deploymentScope: 'Resource Group'
+                    action: 'Create Or Update Resource Group'
+                    resourceGroupName: '$(resourceGroupName)'
+                    location: '$(location)'
+                    deploymentMode: 'Incremental'
+                    deploymentName: $(environment)
+                    templateLocation: 'Linked artifact'
+                    csmFile: '$(Build.SourcesDirectory)/deploy/containerapps/modules/apps/$(bicepFileName)'
+                    overrideParameters: |
+                      -environment $(environment) 
+                      -environmentName $(environment) 
+                      -azureContainerRegistry $(azureContainerRegistry) 
+                      -containerRegistryUserName $(containerRegistryUserName) 
+                      -containerRegistryPassword $(containerRegistryPassword) 
+                      -serviceBusConnection $(serviceBusConnection) 
+                      -managedIdentityClientId $(managedIdentityClientId) 
+                      -userAssignedIdentityName $(userAssignedIdentityName) 
+                      -keyVaultName $(keyVaultName) 
+                      -imageTag $(imageTag) 
+                      
+
+    - stage: Production
+      dependsOn: Build
+      condition: and(succeeded(), eq(variables.isMain, 'true'))
+      displayName: Release To Production
+      variables:
+        - group: 3dplatform-prd-vg
+      jobs:       
+      - deployment:
+        variables:
+          imageTag: $[stageDependencies.Build.BuildAndPush.outputs['Build.ImageTag']]
+          bicepFileName: '${{ parameters.serviceName }}.bicep'
+        displayName: Production deploy
+        environment: prd
+        strategy:
+            runOnce:
+              deploy:
+                steps:
+                - script: echo group $(resourceGroupName) image $(azureContainerRegistry)/$(serviceName):$(imageTag)
+                  name: echovar
+
+                - checkout: self
+                  clean: true
+                - script: az bicep build --file deploy/containerapps/modules/apps/$(bicepFileName)
+                  displayName: 'Compile Bicep File'
+                - task: AzureResourceManagerTemplateDeployment@3
+                  inputs: 
+                    azureResourceManagerConnection: '$(azureServiceConnection)'
+                    deploymentScope: 'Resource Group'
+                    action: 'Create Or Update Resource Group'
+                    resourceGroupName: '$(resourceGroupName)'
+                    location: '$(location)'
+                    deploymentMode: 'Incremental'
+                    deploymentName: $(environment)
+                    templateLocation: 'Linked artifact'
+                    csmFile: '$(Build.SourcesDirectory)/deploy/containerapps/modules/apps/$(bicepFileName)'
+                    overrideParameters: |
+                      -environment $(environment) 
+                      -environmentName $(environment) 
+                      -azureContainerRegistry $(azureContainerRegistry) 
+                      -containerRegistryUserName $(containerRegistryUserName) 
+                      -containerRegistryPassword $(containerRegistryPassword) 
+                      -serviceBusConnection $(serviceBusConnection) 
+                      -managedIdentityClientId $(managedIdentityClientId) 
+                      -userAssignedIdentityName $(userAssignedIdentityName) 
+                      -keyVaultName $(keyVaultName) 
+                      -imageTag $(imageTag)                       

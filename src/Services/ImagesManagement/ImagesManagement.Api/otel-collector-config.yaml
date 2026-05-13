@@ -1,0 +1,35 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  logging:
+    loglevel: debug
+  otlp:
+    endpoint: https://otlp.eu01.nr-data.net:443
+    headers:
+      api-key: eu01xxc1b88dbeb472937e3ff00bb1dfFFFFNRAL 
+     
+processors:
+  batch:
+
+extensions:
+  health_check:
+    
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging,otlp]
+      processors: [batch]
+    metrics:
+      receivers: [otlp]
+      exporters: [logging,otlp]
+      processors: [batch]
+    logs:
+      receivers: [otlp]
+      exporters: [logging,otlp]
+      processors: [batch]      

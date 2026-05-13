@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+
+  images-management-api:
+    image: ${REGISTRY:-platform3d}/images-management.api:${TAG:-latest}
+    build:
+      context: ../../../../
+      dockerfile: src/Services/ImagesManagement/ImagesManagement.API/Dockerfile
+
+  images-management-api-dapr:
+    image: "daprio/daprd:1.11.0"
+    volumes:
+      - "/var/.dapr:/dapr"
+    depends_on:
+      - images-management-api
+    network_mode: "service:images-management-api"

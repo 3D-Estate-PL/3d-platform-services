@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>CoreProducts.Application</AssemblyName>
+        <RootNamespace>CoreProducts.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Products\Images" />
+      <Folder Include="Products\Queries" />
+      <Folder Include="Styles\Commands" />
+    </ItemGroup>
+
+    <ItemGroup>
+
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Abstractions.CQRS\BuildingBlocks.Abstractions.CQRS.csproj" />
+
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Abstractions.Excel\BuildingBlocks.Abstractions.Excel.csproj" />
+
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Abstractions.Exceptions\BuildingBlocks.Abstractions.Exceptions.csproj" />
+
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Abstractions.Storage\BuildingBlocks.Abstractions.Storage.csproj" />
+
+      <ProjectReference Include="..\..\..\BuildingBlocks\Application\BuildingBlocks.Application.EventBus\BuildingBlocks.Application.EventBus.csproj" />
+
+      <ProjectReference Include="..\CoreProducts.Domain\CoreProducts.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,93 @@
+services:
+
+  platform-api-gw:
+    image: ${REGISTRY:-platform3d}/platform-api-gw:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/ApiGateways/Gateways.PlatformApiGateway/Dockerfile
+
+
+
+  platform-api-gw-dapr:
+    image: "daprio/daprd:1.9.4"
+    network_mode: "service:platform-api-gw"
+    depends_on:
+      - platform-api-gw
+        
+        
+  style-configurator-api-gw:
+    image: ${REGISTRY:-platform3d}/style-configurator-api-gw:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/ApiGateways/Gateways.ToursStylesConfigurator/Dockerfile
+
+
+
+  style-configurator-api-gw-dapr:
+    image: "daprio/daprd:1.9.4"
+    network_mode: "service:style-configurator-api-gw"
+    depends_on:
+      - style-configurator-api-gw        
+  
+  
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./output:/etc/output:rw # Store the logs    
+  
+  
+  images-management-api:
+    image: ${REGISTRY:-platform3d}/images-management.api:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/Services/ImagesManagement/ImagesManagement.Api/Dockerfile
+  
+  images-management-api-dapr:
+    image: "daprio/daprd:1.9.4"
+    network_mode: "service:images-management-api"
+    depends_on:
+      - images-management-api  
+  
+  core-products-api:
+    image: ${REGISTRY:-platform3d}/core-products.api:${TAG:-latest}    
+    build:
+      context: .
+      dockerfile: src/Services/CoreProducts/CoreProducts.Api/Dockerfile  
+
+  core-products-api-dapr:
+    image: "daprio/daprd:1.9.4"
+    network_mode: "service:core-products-api"
+    depends_on:
+      - core-products-api
+    
+    
+  interior-designers-api:
+    image: ${REGISTRY:-platform3d}/interior-designers.api:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/Services/InteriorDesigners/InteriorDesigners.Api/Dockerfile
+  
+  interior-designers-api-dapr:
+    image: "daprio/daprd:latest"
+    volumes:
+      - "/var/.dapr:/dapr"
+    depends_on:
+      - interior-designers-api
+    network_mode: "service:interior-designers-api"
+    
+    
+  tours-styles-configurator-api:
+    image: ${REGISTRY:-platform3d}/tours-styles-configurator.api:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/Services/ToursStylesConfigurator/TourStylesConfigurator.Api/Dockerfile
+
+  tours-styles-configurator-api-dapr:
+    image: "daprio/daprd:latest"
+    volumes:
+       - "/var/.dapr:/dapr"
+    depends_on:
+      - tours-styles-configurator-api
+    network_mode: "service:tours-styles-configurator-api"

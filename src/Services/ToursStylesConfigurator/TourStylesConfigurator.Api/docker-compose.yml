@@ -1,0 +1,47 @@
+version: '3.4'
+
+services:
+  zipkin:
+    image: openzipkin/zipkin-slim:latest
+    
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./output:/etc/output:rw # Store the logs    
+      
+
+
+  platform-api-gw:
+    image: ${REGISTRY:-platform3d}/platform-api-gw:${TAG:-latest}
+    build:
+      context: ../../../../
+      dockerfile: src/ApiGateways/Gateways.PlatformApiGateway/Dockerfile
+
+
+
+  platform-api-gw-dapr:
+    image: "daprio/daprd:1.9.4"
+    network_mode: "service:platform-api-gw"
+    depends_on:
+      - platform-api-gw   
+      
+
+  tours-styles-configurator-api:    
+    image: ${REGISTRY:-platform3d}/tours-styles-configurator.api:${TAG:-latest}
+    build:
+      context: ../../../../
+      dockerfile: src/Services/ToursStylesConfigurator/TourStylesConfigurator.Api/Dockerfile
+    depends_on:
+      - otel-collector
+  
+  tours-styles-configurator-api-dapr:
+    image: "daprio/daprd:latest"
+    volumes:
+      - "/var/.dapr:/dapr"
+    depends_on:
+      - tours-styles-configurator-api
+    network_mode: "service:tours-styles-configurator-api"
+
+    

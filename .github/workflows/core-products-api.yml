@@ -1,0 +1,62 @@
+name: core-products-api
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - main
+    - develop
+
+    paths:
+    - src/BuildingBlocks/**
+    - src/Services/CoreProductsLibrary/**
+    - .github/workflows/core-products-api.yml
+    - docker-compose.yml
+  
+env:
+  SERVICE: core-products-api
+  IMAGE: core-products.api
+  DOTNET_VERSION: 7.0.x
+  REGISTRY: ${{ secrets.REGISTRY }}
+
+jobs:
+
+  BuildLinux:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+    - name: 'Checkout Github Action'
+      uses: actions/checkout@master
+
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        include-prerelease: ${{ env.USE_DOTNET_PREVIEW }}
+
+    - name: Build
+      run: |
+        dotnet restore "src/Services/CoreProducts/CoreProducts.Api/CoreProducts.Api.csproj"
+        cd src/Services/CoreProducts/CoreProducts.Api
+        dotnet build --no-restore
+          
+    - name: Login to Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: acr3destate.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Compose build ${{ env.SERVICE }}
+      run: sudo -E docker-compose build ${{ env.SERVICE }}
+      working-directory: ./src
+      shell: bash
+      env:
+        REGISTRY: ${{ secrets.REGISTRY }}
+
+    - name: Compose push ${{ env.SERVICE }}
+      run: sudo -E docker-compose push ${{ env.SERVICE }}
+      working-directory: ./src
+      shell: bash
+      env:
+        REGISTRY: ${{ secrets.REGISTRY }}

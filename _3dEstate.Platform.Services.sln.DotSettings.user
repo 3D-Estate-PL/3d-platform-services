@@ -1,0 +1,68 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;
+  &lt;Assembly Path="/Users/michalwojcik/.nuget/packages/namegenerator/2.0.4/lib/netstandard2.0/NameGenerator.dll" /&gt;
+&lt;/AssemblyExplorer&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=584a46af_002D6cd0_002D42e9_002Da790_002D226105008458/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="ImageResolutionCanBeAddOnlyOnce" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;net7.0::NUnit3x::F3CD607E-D3CB-40F3-8103-1CEFEC9B85FB::BuildingBlocks.Application.Tests.ApplicationBuildingBlocksTests.get_topic_name_should_return_value_from_topic_name_attribute&lt;/TestId&gt;
+    &lt;TestId&gt;net7.0::NUnit3x::6B3EEC00-0471-4DEF-8246-92BA942E4A72::BuildingBlocks.Infrastructure.Tests.AzureStorageTests.Test1&lt;/TestId&gt;
+    &lt;TestId&gt;net7.0::NUnit3x::2B24A6D5-50CE-4AA3-9ADD-A27D39DE3BF6::CoreProductsLibrary.Application.IntegrationTests.ImportProductsFromFileCommandTests.TestImportProductsFromFileCommand&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=a67b60b0_002D0970_002D49fe_002D944b_002Dc64a66ad8782_0023ImagesManagement_002EUnitTests/@EntryIndexedValue">True</s:Boolean>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	</wpf:ResourceDictionary>

@@ -1,0 +1,39 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+parameters:
+- name: clean
+  displayName: Checkout clean
+  type: boolean
+  default: true
+
+
+trigger:
+  branches:  
+    include:      
+    - develop
+    - main
+  paths:
+    include:
+    - src/BuildingBlocks/**    
+    - src/ApiGateways/Gateways.PlatformApiGateway/**
+    - deploy/platform-gateway-pipelines.yml
+    - deploy/containerapps/modules/apps/platform-api-gw.bicep
+
+
+pool:
+  name: Default
+
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  applicationName: platform
+  azureSubscription: platform-services-prod-asc
+  serviceName:  platform-api-gw
+
+stages:
+- template: templates/container-app-stages.yml  # Template reference
+  parameters:
+    serviceName: $(serviceName)

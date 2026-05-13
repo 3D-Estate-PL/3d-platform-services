@@ -1,0 +1,125 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+parameters:
+- name: clean
+  displayName: Checkout clean
+  type: boolean
+  default: true
+
+
+trigger:
+  branches:  
+    include:      
+    - develop
+    - main
+  paths:
+    include:
+    - deploy/containerapps/modules/infra/**
+    - deploy/containerapps/modules/dapr/**
+    - deploy/main-infra.yml
+
+
+pool:
+  name: Default
+
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  applicationName: platform
+  azureSubscription: platform-services-prod-asc
+
+
+stages:
+    - stage: Init
+      jobs:
+      - job: PrintVariables
+        displayName: Determine Branch
+        steps:
+        - script: | 
+            echo $(isMain)   
+
+    - stage: Staging
+      condition: and(succeeded(), eq(variables.isDevelop, 'true'))
+      displayName: Staging Infrastructure
+      variables:
+        - group: 3dplatform-stg-vg
+      jobs:       
+      - deployment:
+        variables:
+          environment: 'staging'
+          imageTag: $[stageDependencies.Build.BuildAndPush.outputs['Build.ImageTag']]
+        displayName: Deploy
+        environment: Staging
+        strategy:
+            runOnce:
+              deploy:
+                steps:
+                - script: echo group $(resourceGroupName) image $(azureContainerRegistry)/$(serviceName):$(imageTag)
+                  name: echovar
+
+                - checkout: self
+                  clean: true
+                - script: az bicep build --file deploy/containerapps/main-infra.bicep
+                  displayName: 'Compile Infra Bicep File'
+                - task: AzureResourceManagerTemplateDeployment@3
+                  inputs: 
+                    azureResourceManagerConnection: '$(azureServiceConnection)'
+                    deploymentScope: 'Resource Group'
+                    action: 'Create Or Update Resource Group'
+                    resourceGroupName: '$(resourceGroupName)'
+                    location: '$(location)'
+                    deploymentMode: 'Incremental'
+                    deploymentName: $(environment)
+                    templateLocation: 'Linked artifact'
+                    csmFile: '$(Build.SourcesDirectory)/deploy/containerapps/main-infra.json'
+                    overrideParameters: |
+                      -environment $(environment) 
+                      -userAssignedIdentityName $(userAssignedIdentityName)                     
+                      -storageAccountName $(storageAccountName) 
+                      -applicationName $(applicationName) 
+
+    - stage: Production
+      condition: eq(variables.isMain, 'true')
+      displayName: Production Infrastrcture
+      variables:
+        - group: 3dplatform-prd-vg
+      jobs:       
+      - deployment:
+        variables:
+          environment: 'prd'
+          imageTag: $[stageDependencies.Build.BuildAndPush.outputs['Build.ImageTag']]
+        displayName: Deploy
+        environment: Production
+        strategy:
+            runOnce:
+              deploy:
+                steps:
+                - script: echo group $(resourceGroupName) image $(azureContainerRegistry)/$(serviceName):$(imageTag)
+                  name: echovar
+
+                - checkout: self
+                  clean: true
+                - script: az bicep build --file deploy/containerapps/main-infra.bicep
+                  displayName: 'Compile Infra Bicep File'
+                - task: AzureResourceManagerTemplateDeployment@3
+                  inputs: 
+                    azureResourceManagerConnection: '$(azureServiceConnection)'
+                    deploymentScope: 'Resource Group'
+                    action: 'Create Or Update Resource Group'
+                    resourceGroupName: '$(resourceGroupName)'
+                    location: '$(location)'
+                    deploymentMode: 'Incremental'
+                    deploymentName: $(environment)
+                    templateLocation: 'Linked artifact'
+                    csmFile: '$(Build.SourcesDirectory)/deploy/containerapps/main-infra.json'
+                    overrideParameters: |
+                      -environment $(environment) 
+                      -userAssignedIdentityName $(userAssignedIdentityName)                     
+                      -storageAccountName $(storageAccountName) 
+                      -applicationName $(applicationName)                       
+
+
+

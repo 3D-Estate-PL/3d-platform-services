@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./output:/etc/output:rw # Store the logs    
+  
+  
+  interior-designers-api:
+    image: ${REGISTRY:-platform3d}/interior-designers.api:${TAG:-latest}
+    build:
+      context: ../../../../
+      dockerfile: src/Services/InteriorDesigners/InteriorDesigners.Api/Dockerfile
+    depends_on:
+      - otel-collector
+  
+  interior-designers-api-dapr:
+    image: "daprio/daprd:latest"
+    volumes:
+      - "/var/.dapr:/dapr"
+    depends_on:
+      - interior-designers-api
+    network_mode: "service:interior-designers-api"
+
+    

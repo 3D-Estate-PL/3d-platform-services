@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>BuildingBlocks.Abstractions.EventBus.Dapr</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Dapr.AspNetCore" Version="1.9.0" />
+        <PackageReference Include="Dapr.Client" Version="1.13.0" />
+ 
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Application\BuildingBlocks.Application.EventBus\BuildingBlocks.Application.EventBus.csproj" />
+    </ItemGroup>
+
+</Project>

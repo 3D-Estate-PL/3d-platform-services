@@ -1,0 +1,37 @@
+@startuml 
+!pragma layout smetana
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+' uncomment the following line and comment the first to use locally
+'!include C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context diagram for Real Estate Context
+
+'Person(customer, "Real Estate Customer", "A customer of the 3D Estate (real estate developer or real estate agent).")
+'Person(real_estate_developer, "Real Estate Developer","")
+Person(real_estate_agent, "Customer", "A real estate agent.")
+System(real_estate_virtual_renovation, "Virtual Renovation System", "Allows customers to order visual resources for their properties.")
+System(notification_system, "Notification System", "Allows to send notifications.")
+System(invoicing_system, "Invoicing System", "Generate invoice for customers.")
+
+System(real_estate_system, "Real Estate System", "Contains all information about real estate.")
+System(rendering_system, "Rendering System", "Generate visual resources for customers.")
+System(implementations_system, "Implementations System", "Site with customer visual resources.")
+
+
+
+Rel(real_estate_agent, real_estate_virtual_renovation, "Order visual resources like tours, floorplan 3d etc.")
+Rel_L(real_estate_virtual_renovation, notification_system, "Sends emails")
+Rel_R(real_estate_virtual_renovation, invoicing_system, "Generate Invoice")
+Rel(real_estate_virtual_renovation, real_estate_system, "Create real estate structure \n like Agent, Flat etc.")
+Rel(real_estate_virtual_renovation, rendering_system, "Generate visual resources for order.")
+Rel(real_estate_virtual_renovation, implementations_system, "Create implementations for customers \n with their visual resources.")
+
+
+
+
+System(notification_system, "Notification system", "The internal notification system. Allows send emails.")
+
+
+@enduml

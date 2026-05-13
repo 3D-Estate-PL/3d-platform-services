@@ -1,0 +1,62 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  zipkin:
+    endpoint: "http://zipkin:9411/api/v2/spans"
+  logging:
+    loglevel: debug
+  otlp:
+    endpoint: https://otlp.eu01.nr-data.net:443
+    headers:
+      api-key: eu01xxc1b88dbeb472937e3ff00bb1dfFFFFNRAL  
+     
+processors:
+  batch:
+  filter/1:
+    logs:
+      exclude:
+        match_type: regexp
+        record_attributes:
+          - key: Path
+            value: /healthz*    
+    spans:
+      exclude:
+        match_type: regexp
+        attributes:
+          - key: http.target
+            value: /healthz*
+    metrics:
+      exclude:
+        match_type: regexp
+        resource_attributes:
+          - key: http.route
+            value: /healthz*
+  filter/2:
+    logs:
+      exclude:
+        match_type: strict
+        record_attributes:
+          - key: EndpointName
+            value: Health checks
+extensions:
+  health_check:
+    
+service:    
+  extensions: [health_check]
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [logging,otlp]
+      processors: [batch,filter/1,filter/2]
+    metrics:
+      receivers: [otlp]
+      exporters: [logging,otlp]
+      processors: [batch,filter/1,filter/2]        
+    traces:
+      receivers: [otlp]
+      exporters: [logging,otlp,zipkin]
+      processors: [batch,filter/1,filter/2]      
